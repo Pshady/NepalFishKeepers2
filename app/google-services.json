@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "676090130098",
+    "firebase_url": "https://nepalfishkeepers-c5925.firebaseio.com",
+    "project_id": "nepalfishkeepers-c5925",
+    "storage_bucket": "nepalfishkeepers-c5925.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676090130098:android:0885ed9fb837664f",
+        "android_client_info": {
+          "package_name": "com.example.android.nepalfishkeepers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "676090130098-d5ke71qt1eb4bo8hsnuh803v0cu69eie.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.android.nepalfishkeepers",
+            "certificate_hash": "c0435272f2d003c3caf42b3fe07a4f9499a4a10f"
+          }
+        },
+        {
+          "client_id": "676090130098-hev3fp952damkblqd3ila3ou7563dm94.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPQnkrD6MCJm2dx9xZi2jJkU_x7B_AmYg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "676090130098-hev3fp952damkblqd3ila3ou7563dm94.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

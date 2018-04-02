@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">NepalFishKeepers</string>
+    <string name="action_settings">Settings</string>
+
+    <string-array name="names">
+        <item>Tropical</item>
+        <item>Cichlid</item>
+        <item>Live Bearers</item>
+        <item>Saltwater</item>
+        <item>Predator</item>
+        <item>Catfish</item>
+        <item>Plants</item>
+        <item>Monster</item>
+        <item>Decoration</item>
+        <item>Accesories</item>
+        <item>Others</item>
+    </string-array>
+
+</resources>
