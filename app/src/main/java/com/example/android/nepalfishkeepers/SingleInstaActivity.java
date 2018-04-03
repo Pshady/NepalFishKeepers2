@@ -77,6 +77,7 @@ public class SingleInstaActivity extends AppCompatActivity {
         mDatabase.child(post_key).removeValue();
         Intent mainIntent = new Intent(SingleInstaActivity.this, MainActivity.class);
         startActivity(mainIntent);
+        finish();
 
     }
 

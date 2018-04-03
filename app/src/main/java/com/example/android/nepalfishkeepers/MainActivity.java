@@ -23,6 +23,7 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.hypertrack.lib.HyperTrack;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.squareup.picasso.Picasso;
 
@@ -148,6 +149,10 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (id == R.id.logout) {
             mAuth.signOut();
+            // Stop HyperTrack SDK
+            HyperTrack.stopTracking();
+        }else if(id == R.id.action_map){
+            startActivity(new Intent(this, MapActivity.class));
         }
 
 
