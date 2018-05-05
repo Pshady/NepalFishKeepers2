@@ -1,10 +1,11 @@
 package com.example.android.nepalfishkeepers;
 
 import android.content.Intent;
-import android.media.Image;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -26,7 +27,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText passField;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
-    TextView rText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,14 +40,14 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
 
-        rText = findViewById(R.id.loginRedirect);
-        rText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
-                startActivity(intent);
-            }
-        });
+
+
+    }
+
+    public void onBackPressed() {
+
+        android.os.Process.killProcess(android.os.Process.myPid());
+        // This above line close correctly
     }
 
     public void registerButtonClicked(View view){
@@ -70,9 +71,15 @@ public class RegisterActivity extends AppCompatActivity {
                         current_user_db.child("Name").setValue(name);
                         current_user_db.child("Image").setValue("default");
 
+                        // Get Firebase token
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        String firebaseToken = sharedPreferences.getString("firebaseToken", "");
+                        current_user_db.child("firebasetoken").setValue(firebaseToken);
+
                         Intent mainIntent = new Intent(RegisterActivity.this, SetupActivity.class);
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(mainIntent);
+                        finish();
 
                     }
                 }
@@ -80,9 +87,21 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    public void loginRedirectView(View v)
-    {
+    public void loginRedirectView(View view){
+
+        TextView rtext = findViewById(R.id.loginRedirect);
+
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(intent);
+
+                rtext.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        RegisterActivity.this.finish();
+                    }
+                });
 
     }
+
 
 }

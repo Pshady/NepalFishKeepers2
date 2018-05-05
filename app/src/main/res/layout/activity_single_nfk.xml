@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.android.nepalfishkeepers.SingleNfkActivity">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/singleUserImage"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        app:civ_border_color="#4169E1"
+        app:civ_border_width="2dp"
+
+        />
+
+    <TextView
+        android:id="@+id/singleUserName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:id="@+id/singleImageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY" />
+
+    <TextView
+        android:id="@+id/singleCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+    <TextView
+        android:id="@+id/singleTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+    <TextView
+        android:id="@+id/singleDesc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/startSharingButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="startSharingButtonClicked"
+        android:text="Start Sharing" />
+
+    <Button
+        android:id="@+id/letsTradeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="letsTradeButtonClicked"
+        android:text="Lets Trade" />
+
+    <Button
+        android:id="@+id/trackButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="trackButtonClicked"
+        android:text="Track" />
+
+    <Button
+        android:id="@+id/singleDeleteButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="deleteButtonClicked"
+        android:text="Delete Image" />
+
+</LinearLayout>
+
+</ScrollView>

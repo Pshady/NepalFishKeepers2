@@ -7,24 +7,34 @@
     tools:context="com.example.android.nepalfishkeepers.SetupActivity">
 
     <ImageButton
+        android:id="@+id/setupImageButton"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_marginLeft="90dp"
-        android:onClick="profileImageButtonClicked"
-        android:id="@+id/setupImageButton"
-        />
+        android:onClick="profileImageButtonClicked" />
 
     <EditText
+        android:id="@+id/displayName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/displayName"
-        android:hint="Enter Username"
-        />
+        android:hint="Enter Username" />
+
+    <Spinner
+        android:id="@+id/spinnerSubs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:entries="@array/names"
+        android:padding="10dp">
+
+    </Spinner>
 
     <Button
+        android:id="@+id/doneButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Done"
         android:onClick="doneButtonClicked"
-        />
+        android:text="Done" />
 </LinearLayout>
