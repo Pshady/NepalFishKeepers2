@@ -4,11 +4,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +27,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.android.nepalfishkeepers.Constants.FCM_SERVER_KEY;
 
 public class SingleNfkActivity extends AppCompatActivity {
 
@@ -39,6 +55,7 @@ public class SingleNfkActivity extends AppCompatActivity {
     private Button startSharingButton;
     private Button letsTradeButton;
     private Button trackButton;
+    private Button reportButton;
     private FirebaseAuth mAuth;
     private FirebaseUser mCurrentUser;
 
@@ -48,7 +65,7 @@ public class SingleNfkActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_nfk);
 
-        post_key = getIntent().getExtras().getString("postId");
+        post_key = getIntent().getExtras().getString("postKey");
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mPostDatabase = FirebaseDatabase.getInstance().getReference().child("NFK").child(post_key);
         mTradeDatabase = FirebaseDatabase.getInstance().getReference().child("Trades");
@@ -70,6 +87,8 @@ public class SingleNfkActivity extends AppCompatActivity {
         startSharingButton.setVisibility(View.GONE);
         trackButton = findViewById(R.id.trackButton);
         trackButton.setVisibility(View.GONE);
+        reportButton = findViewById(R.id.reportButton);
+        reportButton.setVisibility(View.GONE);
     }
 
     @Override
@@ -80,6 +99,7 @@ public class SingleNfkActivity extends AppCompatActivity {
         letsTradeButton.setVisibility(View.GONE);
         startSharingButton.setVisibility(View.GONE);
         trackButton.setVisibility(View.GONE);
+        reportButton.setVisibility(View.GONE);
 
         mPostListener = new ValueEventListener() {
             @Override
@@ -88,11 +108,17 @@ public class SingleNfkActivity extends AppCompatActivity {
 
                     mPost = dataSnapshot.getValue(Nfk.class);
 
-                    if (mPost.tradeCount == 0) {
-                        // For post owner
-                        if (mAuth.getCurrentUser().getUid().equals(mPost.getUid())) {
+                    if (mAuth.getCurrentUser().getUid().equals(mPost.getUid())) {
+                        if (mPost.tradeCount == 0) {
+                            // For post owner
                             deleteButton.setVisibility(View.VISIBLE);
-                        } else {
+                        }
+                    } else {
+                        reportButton.setVisibility(View.VISIBLE);
+                        if(mPost.isReported()) {
+                            reportButton.setEnabled(false);
+                        }
+                        if (mPost.tradeCount == 0) {
                             // If current user is trading
                             letsTradeButton.setVisibility(View.VISIBLE);
                             letsTradeButton.setText("Lets trade");
@@ -149,10 +175,13 @@ public class SingleNfkActivity extends AppCompatActivity {
                     } else {
                         // For buyers
                         deleteButton.setVisibility(View.GONE);
+                        // If current user is trading
+                        letsTradeButton.setVisibility(View.VISIBLE);
+                        reportButton.setVisibility(View.VISIBLE);
+                        if(mPost.isReported()) {
+                            reportButton.setEnabled(false);
+                        }
                         if (trade.getTraderId().equals(mCurrentUser.getUid())) {
-                            // If current user is trading
-                            letsTradeButton.setVisibility(View.VISIBLE);
-
                             switch (tradeStatus) {
                                 case WAITING_FOR_APPROVAL:
                                     // Already asked for trade
@@ -166,7 +195,7 @@ public class SingleNfkActivity extends AppCompatActivity {
                                     break;
                                 case TRADED:
                                     // Already traded
-                                    letsTradeButton.setText("Already Traded");
+                                    letsTradeButton.setText("Already traded");
                                     letsTradeButton.setEnabled(false);
                                     break;
                                 case NOT_SHARED:
@@ -177,7 +206,19 @@ public class SingleNfkActivity extends AppCompatActivity {
                                     break;
                             }
                         } else {
-                            letsTradeButton.setVisibility(View.GONE);
+                            letsTradeButton.setVisibility(View.VISIBLE);
+                            letsTradeButton.setEnabled(false);
+                            switch (tradeStatus) {
+                                case TRADED:
+                                    letsTradeButton.setText("Already traded");
+                                    break;
+                                case NOT_SHARED:
+                                case WAITING_FOR_APPROVAL:
+                                case APPROVED:
+                                default:
+                                       letsTradeButton.setText("Trade going on");
+                                       break;
+                            }
                         }
                     }
                 }
@@ -208,6 +249,55 @@ public class SingleNfkActivity extends AppCompatActivity {
         finish();
     }
 
+    public void reportButtonClicked(View view) {
+        mPostDatabase.child("reported").setValue(true);
+
+        Toast.makeText(getApplicationContext(), "Post has been reported.", Toast.LENGTH_SHORT).show();;
+    }
+
+    private void sendNotification(final String title, final String body, final String firebaseToken) {
+        String url ="https://fcm.googleapis.com/fcm/send";
+        VolleyLog.DEBUG = true;
+
+        JSONObject params = new JSONObject();
+        JSONObject notification = new JSONObject();
+        try {
+            params.put("to", firebaseToken);
+            notification.put("message", body);
+            notification.put("title", title);
+            notification.put("type", NotificationType.TRADE_REQUEST);
+            notification.put("postKey", post_key);
+            params.put("data", notification);
+        } catch (JSONException e) {
+            Log.d("JsonError", e.getMessage());
+        }
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.POST, url, params,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        Toast.makeText(getApplicationContext(), "Notification sent", Toast.LENGTH_SHORT).show();;
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();;
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("Authorization", "key=" + FCM_SERVER_KEY);
+                params.put("Content-Type", "application/json");
+                return params;
+            }
+        };
+        RequestQueueSingleton.getInstance(this.getApplicationContext()).addToRequestQueue(jsonRequest);
+    }
+
     public void letsTradeButtonClicked(View view) {
         final DatabaseReference newTrade = mTradeDatabase.child(post_key);
 
@@ -221,6 +311,25 @@ public class SingleNfkActivity extends AppCompatActivity {
         // Update tradeCount of post
         mPost.tradeCount += 1;
         mPostDatabase.child("tradeCount").setValue(mPost.tradeCount);
+
+        mDatabase.child("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.child(mPost.getUid()).getValue(User.class);
+                User currentUser = dataSnapshot.child(mCurrentUser.getUid()).getValue(User.class);
+
+                sendNotification("Trade requested",
+                        currentUser.getUsername() + " has requested for a trade",
+                        user.getFirebasetoken());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
 
 //        mTradeDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
 //            @Override

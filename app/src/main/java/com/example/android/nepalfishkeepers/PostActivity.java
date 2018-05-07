@@ -41,6 +41,8 @@ import com.google.gson.JsonObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,6 +61,40 @@ public class PostActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabaseUsers;
     private FirebaseUser mCurrentUser;
+    private ArrayList<String> mCategories;
+    private Spinner mSpinner;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mCategories = new ArrayList<>();
+
+        DatabaseReference categoryRef = FirebaseDatabase.getInstance().getReference().child("Categories");
+        categoryRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    Map<String, Object> categories = (Map<String, Object>) dataSnapshot.getValue();
+                    for (final Map.Entry<String, Object> entry : categories.entrySet()) {
+                        //Get user map
+                        final Map category = (Map) entry.getValue();
+                        mCategories.add(category.get("name").toString());
+                    }
+                    Collections.sort(mCategories);
+                    ArrayAdapter<String> myAdapter = new ArrayAdapter<String>(PostActivity.this,
+                            android.R.layout.simple_list_item_1, mCategories);
+                    myAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    mSpinner.setAdapter(myAdapter);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,14 +105,8 @@ public class PostActivity extends AppCompatActivity {
         spinnerCategory = findViewById(R.id.spinnerCategory);
         storageReference = FirebaseStorage.getInstance().getReference();
         databaseReference = FirebaseDatabase.getInstance().getReference().child("NFK");
-
-
-        Spinner mySpinner = findViewById(R.id.spinnerCategory);
-
-        ArrayAdapter<String> myAdapter = new ArrayAdapter<String>(PostActivity.this,
-                android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.names));
-        myAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mySpinner.setAdapter(myAdapter);
+        mSpinner = findViewById(R.id.spinnerCategory);
+        mCategories = new ArrayList<>();
 
         mAuth = FirebaseAuth.getInstance();
         mCurrentUser = mAuth.getCurrentUser();
@@ -179,8 +209,8 @@ public class PostActivity extends AppCompatActivity {
                 String username = dataSnapshot.child("username").getValue().toString();
 
                 Nfk post = new Nfk(titleValue, descValue,
-                        downloadurl.toString(), username,
-                        categoryValue, userimage, mCurrentUser.getUid());
+                        downloadurl != null ? downloadurl.toString() : null, username,
+                        categoryValue, userimage, mCurrentUser.getUid(), false);
                 newPost.setValue(post).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {

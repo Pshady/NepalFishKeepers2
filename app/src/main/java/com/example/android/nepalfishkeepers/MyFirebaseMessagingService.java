@@ -35,7 +35,9 @@ public class MyFirebaseMessagingService extends HyperTrackFirebaseMessagingServi
                 postKey = remoteMessage.getData().get("postKey");
                 String collectionId = remoteMessage.getData().get("collectionId");
                 intent = new Intent(getApplicationContext(), TradeActivity.class);
-                intent.putExtra("postId", postKey);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.putExtra("postKey", postKey);
                 intent.putExtra("collectionId", collectionId);
                 pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 MyNotificationManager.getInstance(getApplicationContext())
@@ -44,7 +46,19 @@ public class MyFirebaseMessagingService extends HyperTrackFirebaseMessagingServi
             case POST_CREATED:
                 postKey = remoteMessage.getData().get("postKey");
                 intent = new Intent(getApplicationContext(), SingleNfkActivity.class);
-                intent.putExtra("postId", postKey);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.putExtra("postKey", postKey);
+                pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                MyNotificationManager.getInstance(getApplicationContext())
+                        .displayNotification(title, message, pendingIntent);
+                break;
+            case TRADE_REQUEST:
+                postKey = remoteMessage.getData().get("postKey");
+                intent = new Intent(getApplicationContext(), SingleNfkActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.putExtra("postKey", postKey);
                 pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 MyNotificationManager.getInstance(getApplicationContext())
                         .displayNotification(title, message, pendingIntent);

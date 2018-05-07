@@ -73,6 +73,13 @@
         android:text="Track" />
 
     <Button
+        android:id="@+id/reportButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="reportButtonClicked"
+        android:text="Report" />
+
+    <Button
         android:id="@+id/singleDeleteButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

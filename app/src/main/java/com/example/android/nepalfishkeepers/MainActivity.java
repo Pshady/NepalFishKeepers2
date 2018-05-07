@@ -11,6 +11,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -42,13 +44,15 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FloatingActionButton fab;
     private Animation rotateForward, rotateBackward;
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mToggle;
 
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
 
         createNotificationChannel();
 
@@ -57,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
         mNfkList = findViewById(R.id.nfk_list);
         mNfkList.setHasFixedSize(true);
         mNfkList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true));
+
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
+        mDrawerLayout.addDrawerListener(mToggle);
+        mToggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mDatabase = FirebaseDatabase.getInstance().getReference().child("NFK");
         mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -133,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     public void fabBtnClicked(View view) {
         fab.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#008080")));
         rotateForward = AnimationUtils.loadAnimation(this, R.anim.rotate_forward);
@@ -176,6 +187,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void populateViewHolder(NfkViewHolder viewHolder, Nfk model, int position) {
 
+                if(model.isReported()) {
+                    viewHolder.setVisibility(View.GONE);
+                    return;
+                }
+
                 final String post_key = getRef(position).getKey().toString();
                 final String post_uid = model.getUid();
 
@@ -190,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
                 viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent singleInstaActivity = new Intent(MainActivity.this, SingleNfkActivity.class);
-                        singleInstaActivity.putExtra("postId", post_key);
+                        Intent singleInstaActivity = new Intent(MainActivity.this.getApplicationContext(), SingleNfkActivity.class);
+                        singleInstaActivity.putExtra("postKey", post_key);
                         singleInstaActivity.putExtra("postOwner", post_uid);
                         startActivity(singleInstaActivity);
 //                        MainActivity.this.finish();
@@ -216,13 +232,19 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        if(mToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+//
+//        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         } else if (id == R.id.logout) {
             mAuth.signOut();
 
         }
+
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -275,6 +297,10 @@ public class MainActivity extends AppCompatActivity {
             postUid.setText(uid);
         }
 
+        public void setVisibility(int visibility) {
+            mView.setVisibility(visibility);
+        }
+
     }
 
     private void createNotificationChannel(){
@@ -290,6 +316,8 @@ public class MainActivity extends AppCompatActivity {
             mNotificationManager.createNotificationChannel(mChannel);
         }
     }
+
+
 
 
 }

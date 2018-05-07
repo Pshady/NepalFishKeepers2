@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -14,14 +15,22 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
 
 public class SetupActivity extends AppCompatActivity {
 
@@ -32,6 +41,7 @@ public class SetupActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabaseusers;
     private StorageReference mStorageref;
+    private ArrayList<String> mCategories;
     private Spinner spinnerSubs;
 
     @Override
@@ -48,10 +58,39 @@ public class SetupActivity extends AppCompatActivity {
 
         spinnerSubs = findViewById(R.id.spinnerSubs);
 
-        ArrayAdapter<String> myAdapter = new ArrayAdapter<String>(SetupActivity.this,
-                android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.names));
-        myAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerSubs.setAdapter(myAdapter);
+        mCategories = new ArrayList<>();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mCategories = new ArrayList<>();
+
+        DatabaseReference categoryRef = FirebaseDatabase.getInstance().getReference().child("Categories");
+        categoryRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    Map<String, Object> categories = (Map<String, Object>) dataSnapshot.getValue();
+                    for (final Map.Entry<String, Object> entry : categories.entrySet()) {
+                        //Get user map
+                        final Map category = (Map) entry.getValue();
+                        mCategories.add(category.get("name").toString());
+                    }
+                    Collections.sort(mCategories);
+                    ArrayAdapter<String> myAdapter = new ArrayAdapter<String>(SetupActivity.this,
+                            android.R.layout.simple_list_item_1, mCategories);
+                    myAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinnerSubs.setAdapter(myAdapter);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void profileImageButtonClicked(View view) {

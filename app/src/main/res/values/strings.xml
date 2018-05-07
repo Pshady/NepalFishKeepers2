@@ -1,21 +1,8 @@
 <resources>
     <string name="app_name">NepalFishKeepers</string>
     <string name="action_settings">Settings</string>
-
-    <string-array name="names">
-        <item>Tropical</item>
-        <item>Cichlid</item>
-        <item>Live-Bearers</item>
-        <item>Saltwater</item>
-        <item>Predator</item>
-        <item>Catfish</item>
-        <item>Plants</item>
-        <item>Monster</item>
-        <item>Decoration</item>
-        <item>Accessories</item>
-        <item>Others</item>
-    </string-array>
-
+    <string name="open">Open</string>
+    <string name="close">Close</string>
 
     <string name="title_activity_login2">Sign in</string>
 

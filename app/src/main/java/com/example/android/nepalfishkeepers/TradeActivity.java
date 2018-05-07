@@ -1,5 +1,6 @@
 package com.example.android.nepalfishkeepers;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
@@ -79,6 +80,7 @@ public class TradeActivity extends FragmentActivity {
     private DatabaseReference mTradeDatabase;
     private FirebaseUser mCurrentUser;
     private String collectionId;
+    private ProgressDialog mProgressDialog;
 
     private void getDeviceLocation() {
         /*
@@ -232,6 +234,11 @@ public class TradeActivity extends FragmentActivity {
                 .setCollectionId(collectionId)
                 .build();
 
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setMessage("Sharing destination");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+
         // Call createAction to create an action
         HyperTrack.createAndAssignAction(params, new HyperTrackCallback() {
             @Override
@@ -249,6 +256,7 @@ public class TradeActivity extends FragmentActivity {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             Trade trade = dataSnapshot.child("Trades").child(postKey).getValue(Trade.class);
                             User trader = dataSnapshot.child("Users").child(trade.getTraderId()).getValue(User.class);
+                            User tradeOwner = dataSnapshot.child("Users").child(trade.getTradeOwner()).getValue(User.class);
 
                             // Store collectionId in database for future use
                             DatabaseReference tradeReference = mDatabase.child("Trades").child(postKey);
@@ -259,6 +267,10 @@ public class TradeActivity extends FragmentActivity {
 
                             tradeReference.setValue(trade);
 
+                            if(mProgressDialog != null) {
+                                mProgressDialog.cancel();
+                            }
+
 //                            tradeReference.child("collectionId").setValue(collectionId);
 //                            tradeReference.child("sharers").setValue(mCurrentUser.getUid(), action.getId());
 //
@@ -268,7 +280,9 @@ public class TradeActivity extends FragmentActivity {
                             // Send notification with collectionId
                             sendNotification("Trade request accepted",
                                     "Trade location has been shared",
-                                    trader.getFirebasetoken(),
+                                    mCurrentUser.getUid().equals(trade.getTraderId())
+                                            ? tradeOwner.getFirebasetoken()
+                                            : trader.getFirebasetoken(),
                                     collectionId);
 
                             Intent intent = new Intent(TradeActivity.this, TradeActivity.class);
@@ -295,18 +309,21 @@ public class TradeActivity extends FragmentActivity {
     }
 
     private void shareComplete() {
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setMessage("Completing track");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+
         mDatabase.child("Trades").child(postKey).addValueEventListener(new ValueEventListener() {
              @Override
              public void onDataChange(final DataSnapshot dataSnapshot) {
-
-                 Log.d("completedddd", "yo yo");
 
                  TradeStatus status = TradeStatus.valueOf(dataSnapshot.child("tradeStatus").getValue().toString());
                  if(status == TradeStatus.TRADED) {
                      HyperTrack.removeActions(null);
                      // Handle removeActions response here
 //                     Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-//                     intent.putExtra("postId", postKey);
+//                     intent.putExtra("postKey", postKey);
 //                     startActivity(intent);
                      TradeActivity.this.finish();
                  }
@@ -327,7 +344,7 @@ public class TradeActivity extends FragmentActivity {
 
 //                                 HyperTrack.removeActions(null);
 //                                 Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-//                                 intent.putExtra("postId", postKey);
+//                                 intent.putExtra("postKey", postKey);
 //                                 startActivity(intent);
 //                                 TradeActivity.this.finish();
 
@@ -360,8 +377,12 @@ public class TradeActivity extends FragmentActivity {
 //                                     mDatabase.child("Trades").child(postKey).child("sharers").child(traderId).setValue("");
 
                                              HyperTrack.removeActions(null);
+
+                                             if(mProgressDialog != null) {
+                                                 mProgressDialog.cancel();
+                                             }
 //                                             Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-//                                             intent.putExtra("postId", postKey);
+//                                             intent.putExtra("postKey", postKey);
 //                                             startActivity(intent);
                                              TradeActivity.this.finish();
                                          }
@@ -382,9 +403,12 @@ public class TradeActivity extends FragmentActivity {
                              mTradeDatabase.child(postKey).setValue(trade);
 
                              HyperTrack.removeActions(null);
-                             Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-                             intent.putExtra("postId", postKey);
-                             startActivity(intent);
+                             if(mProgressDialog != null) {
+                                 mProgressDialog.cancel();
+                             }
+//                             Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
+//                             intent.putExtra("postKey", postKey);
+//                             startActivity(intent);
                              TradeActivity.this.finish();
                          }
                      }

@@ -8,12 +8,13 @@ package com.example.android.nepalfishkeepers;
 public class Nfk {
 
     private String title,desc,image,username, category, userimage, uid;
+    private boolean reported;
     public int tradeCount = 0;
     public Nfk(){
 
     }
 
-    public Nfk(String title, String desc, String image, String username, String category, String userimage, String uid){
+    public Nfk(String title, String desc, String image, String username, String category, String userimage, String uid, boolean reported){
         this.title = title;
         this.desc = desc;
         this.image = image;
@@ -21,6 +22,23 @@ public class Nfk {
         this.category = category;
         this.userimage = userimage;
         this.uid = uid;
+        this.reported = reported;
+    }
+
+    public boolean isReported() {
+        return reported;
+    }
+
+    public void setReported(boolean reported) {
+        this.reported = reported;
+    }
+
+    public int getTradeCount() {
+        return tradeCount;
+    }
+
+    public void setTradeCount(int tradeCount) {
+        this.tradeCount = tradeCount;
     }
 
     public String getCategory() { return category; }
