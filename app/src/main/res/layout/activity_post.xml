@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:onClick="submitButtonClicked"
-            android:text="Sumbit" />
+            android:text="Submit" />
 
     </LinearLayout>
 </ScrollView>

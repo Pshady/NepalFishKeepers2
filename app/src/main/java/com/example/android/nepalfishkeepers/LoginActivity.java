@@ -1,6 +1,7 @@
 package com.example.android.nepalfishkeepers;
 
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,8 +29,6 @@ import com.hypertrack.lib.models.ErrorResponse;
 import com.hypertrack.lib.models.SuccessResponse;
 import com.hypertrack.lib.models.UserParams;
 
-import java.util.Map;
-
 public class LoginActivity extends AppCompatActivity {
 
 
@@ -40,13 +40,24 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getCurrentUser() != null) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        }
         setContentView(R.layout.activity_login);
 
         loginEmail = findViewById(R.id.loginEmail);
         loginPass = findViewById(R.id.loginPass);
 
-        mAuth = FirebaseAuth.getInstance();
+
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
+
+        LinearLayout linearLayout = findViewById(R.id.loginLayout);
+        AnimationDrawable animationDrawable = (AnimationDrawable) linearLayout.getBackground();
+        animationDrawable.setEnterFadeDuration(2000);
+        animationDrawable.setExitFadeDuration(4000);
+        animationDrawable.start();
     }
 
     public void loginButtonClicked(View view) {
@@ -54,85 +65,41 @@ public class LoginActivity extends AppCompatActivity {
         String pass = loginPass.getText().toString().trim();
 
         if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(pass)) {
-//             loginUser(email, pass);
             mAuth.signInWithEmailAndPassword(email, pass)
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("Login", "onFailure: ", e);
-                    }
-                })
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            checkUserExists();
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                            Log.e("Login", "onFailure: ", e);
                         }
-                    }
-                });
+                    })
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                checkUserExists();
+                            }
+                        }
+                    });
         }
+
+        if (TextUtils.isEmpty(email) && TextUtils.isEmpty(pass)) {
+            Toast.makeText(getApplicationContext(), "Enter email address and password!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(email)) {
+            Toast.makeText(getApplicationContext(), "Enter email!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(pass)) {
+            Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
     }
 
-//    public void loginUser(final String email, final String pass) {
-//        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                Map<String, Object> users = (Map<String, Object>) dataSnapshot.getValue();
-//                for (final Map.Entry<String, Object> entry : users.entrySet()){
-//                    //Get user map
-//                    final Map singleUser = (Map) entry.getValue();
-//                    String currentEmail = singleUser.get("email").toString();
-//                    boolean blocked = (boolean) singleUser.get("blocked");
-//                    boolean isBlocked = blocked && email.equals(currentEmail);
-//
-//                    if(!isBlocked) {
-//                        mAuth.signInWithEmailAndPassword(email, pass)
-//                            .addOnFailureListener(new OnFailureListener() {
-//                                @Override
-//                                public void onFailure(@NonNull Exception e) {
-//                                    Log.e("Login", "onFailure: ", e);
-//                                }
-//                            })
-//                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-//                                @Override
-//                                public void onComplete(@NonNull Task<AuthResult> task) {
-//                                if (task.isSuccessful()) {
-//                                    final String user_name = (String) singleUser.get("Name");
-//                                    final String user_id = entry.getKey();
-//                                    UserParams userParams = new UserParams()
-//                                            .setName(user_name)
-//                                            .setLookupId(user_id);
-//
-//                                    HyperTrack.getOrCreateUser(userParams, new HyperTrackCallback() {
-//                                        @Override
-//                                        public void onSuccess(@NonNull SuccessResponse successResponse) {
-//                                            // Handle success on getOrCreate user
-//                                            Intent loginIntent = new Intent(LoginActivity.this, MainActivity.class);
-//                                            startActivity(loginIntent);
-//                                            finish();
-//                                        }
-//
-//                                        @Override
-//                                        public void onError(@NonNull ErrorResponse errorResponse) {
-//                                            // Handle error on getOrCreate user
-//                                            Toast.makeText(LoginActivity.this, errorResponse.getErrorMessage(), Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    });
-//                                }
-//                                }
-//                            });
-//                    } else {
-//                        Log.d("Login", "Login failed");
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
 
 
     public void checkUserExists() {
@@ -162,6 +129,7 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     });
                 }
+
             }
 
             @Override
@@ -186,6 +154,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-
 }
+
+
 
