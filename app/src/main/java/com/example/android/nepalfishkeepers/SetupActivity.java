@@ -65,13 +65,15 @@ public class SetupActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        mCategories = new ArrayList<>();
+
 
         DatabaseReference categoryRef = FirebaseDatabase.getInstance().getReference().child("Categories");
         categoryRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
                 if(dataSnapshot.exists()) {
+                    mCategories = new ArrayList<>();
                     Map<String, Object> categories = (Map<String, Object>) dataSnapshot.getValue();
                     for (final Map.Entry<String, Object> entry : categories.entrySet()) {
                         //Get user map

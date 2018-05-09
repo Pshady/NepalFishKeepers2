@@ -9,12 +9,6 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_map"
-        android:orderInCategory="100"
-        android:title="Map"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/logout"
         android:orderInCategory="100"
         android:title="Logout"

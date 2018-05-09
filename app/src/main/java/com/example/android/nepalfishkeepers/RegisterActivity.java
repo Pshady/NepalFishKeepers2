@@ -41,37 +41,32 @@ public class RegisterActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
 
 
-
     }
 
-    public void onBackPressed() {
 
-        android.os.Process.killProcess(android.os.Process.myPid());
-        // This above line close correctly
-    }
-
-    public void registerButtonClicked(View view){
+    public void registerButtonClicked(View view) {
 
         final String name = nameField.getText().toString().trim();
         String email = emailField.getText().toString().trim();
         String pass = passField.getText().toString().trim();
 
-        if(!TextUtils.isEmpty(name) && !TextUtils.isEmpty(email) && !TextUtils.isEmpty(pass)){
-            mAuth.createUserWithEmailAndPassword(email,pass).addOnFailureListener(new OnFailureListener() {
+        if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(email) && !TextUtils.isEmpty(pass)) {
+            mAuth.createUserWithEmailAndPassword(email, pass).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Log.e("FAILURE",e.getMessage());
+                    Log.e("FAILURE", e.getMessage());
                 }
             }).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful()){
+                    if (task.isSuccessful()) {
+                        //Inputting data to the firebase
                         String user_id = mAuth.getCurrentUser().getUid();
                         DatabaseReference current_user_db = mDatabase.child(user_id);
                         current_user_db.child("Name").setValue(name);
                         current_user_db.child("Image").setValue("default");
 
-                        // Get Firebase token
+                        // Getting Firebase token
                         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                         String firebaseToken = sharedPreferences.getString("firebaseToken", "");
                         current_user_db.child("firebasetoken").setValue(firebaseToken);
@@ -79,7 +74,7 @@ public class RegisterActivity extends AppCompatActivity {
                         Intent mainIntent = new Intent(RegisterActivity.this, SetupActivity.class);
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(mainIntent);
-                        finish();
+                        RegisterActivity.this.finish();
 
                     }
                 }
@@ -87,19 +82,12 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    public void loginRedirectView(View view){
+    public void loginRedirectView(View view) {
 
-        TextView rtext = findViewById(R.id.loginRedirect);
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(intent);
 
-                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                startActivity(intent);
-
-                rtext.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        RegisterActivity.this.finish();
-                    }
-                });
+        RegisterActivity.this.finish();
 
     }
 

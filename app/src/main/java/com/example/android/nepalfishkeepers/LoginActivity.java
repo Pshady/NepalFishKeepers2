@@ -1,5 +1,6 @@
 package com.example.android.nepalfishkeepers;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText loginPass;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,11 @@ public class LoginActivity extends AppCompatActivity {
         String pass = loginPass.getText().toString().trim();
 
         if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(pass)) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage("Logging in");
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.show();
+
             mAuth.signInWithEmailAndPassword(email, pass)
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -116,6 +123,11 @@ public class LoginActivity extends AppCompatActivity {
                     HyperTrack.getOrCreateUser(userParams, new HyperTrackCallback() {
                         @Override
                         public void onSuccess(@NonNull SuccessResponse successResponse) {
+
+                            if(mProgressDialog != null) {
+                                mProgressDialog.cancel();
+                            }
+
                             // Handle success on getOrCreate user
                             Intent loginIntent = new Intent(LoginActivity.this, MainActivity.class);
                             startActivity(loginIntent);
@@ -140,18 +152,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void registerRedirectView(View view) {
-        TextView ltext = findViewById(R.id.registerRedirect);
-
         Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
         startActivity(intent);
 
-        ltext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LoginActivity.this.finish();
-            }
-        });
+        LoginActivity.this.finish();
 
+    }
+
+    public void forgotPasswordRedirectClicked(View v) {
+        Intent intent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
+        startActivity(intent);
+
+        LoginActivity.this.finish();
     }
 
 }

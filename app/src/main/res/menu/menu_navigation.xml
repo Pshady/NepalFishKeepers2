@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-<item
-    android:id="@+id/nav_settings"
-    android:title="User Settings"
-    />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.android.nepalfishkeepers.MainActivity">
     <item
-        android:id="@+id/nav_map"
-        android:title="Maps"
-        />
-    <item
-        android:id="@+id/nav_logout"
-        android:title="Logout"
+        android:id="@+id/nav_password"
+        android:title="Change Password"
+        android:icon="@mipmap/baseline_settings_black_48"
         />
 
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@mipmap/baseline_power_settings_new_black_48"
+        android:title="Logout" />
 </menu>

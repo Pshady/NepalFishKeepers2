@@ -101,6 +101,7 @@ public class SingleNfkActivity extends AppCompatActivity {
         trackButton.setVisibility(View.GONE);
         reportButton.setVisibility(View.GONE);
 
+        //value listener implemented for post listens to the
         mPostListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -140,6 +141,8 @@ public class SingleNfkActivity extends AppCompatActivity {
 
             }
         };
+
+        //value listener implemented for trade listens to the
 
         mPostDatabase.addValueEventListener(mPostListener);
 
@@ -182,7 +185,8 @@ public class SingleNfkActivity extends AppCompatActivity {
                             reportButton.setEnabled(false);
                         }
                         if (trade.getTraderId().equals(mCurrentUser.getUid())) {
-                            switch (tradeStatus) {
+                            //person requesting to buy item
+                                switch (tradeStatus) {
                                 case WAITING_FOR_APPROVAL:
                                     // Already asked for trade
                                     letsTradeButton.setText("Waiting for approval");
@@ -206,6 +210,7 @@ public class SingleNfkActivity extends AppCompatActivity {
                                     break;
                             }
                         } else {
+                            //third person watching the post
                             letsTradeButton.setVisibility(View.VISIBLE);
                             letsTradeButton.setEnabled(false);
                             switch (tradeStatus) {
@@ -236,7 +241,7 @@ public class SingleNfkActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-
+// to ensure low battery and memory is consumed
         mTradeDatabase.child(post_key).removeEventListener(mTradeListener);
         mPostDatabase.removeEventListener(mPostListener);
     }
@@ -244,8 +249,6 @@ public class SingleNfkActivity extends AppCompatActivity {
     public void deleteButtonClicked(View view) {
         mPostDatabase.removeValue();
         mTradeDatabase.child(post_key).removeValue();
-//        Intent mainIntent = new Intent(SingleNfkActivity.this, MainActivity.class);
-//        startActivity(mainIntent);
         finish();
     }
 

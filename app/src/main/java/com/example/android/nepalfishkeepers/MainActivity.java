@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -29,12 +30,15 @@ import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.hypertrack.lib.HyperTrack;
 import com.squareup.picasso.Picasso;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     boolean isOpen = false;
     private RecyclerView mNfkList;
@@ -46,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
     private Animation rotateForward, rotateBackward;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
+    private ImageView mHeaderImage;
+    private TextView mHeaderUsername;
+    private NavigationView mNavigationView;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,16 +64,43 @@ public class MainActivity extends AppCompatActivity {
         createNotificationChannel();
 
         fab = findViewById(R.id.fab);
+        mHeaderImage = findViewById(R.id.headerUserimage);
+        mHeaderUsername = findViewById(R.id.headerUsername);
 
         mNfkList = findViewById(R.id.nfk_list);
         mNfkList.setHasFixedSize(true);
         mNfkList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true));
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
+        mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close) {
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+
+                // Load image and username
+                // Get trader's token
+                mDatabaseUsers.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        User user = dataSnapshot.getValue(User.class);
+                        Picasso.with(MainActivity.this).load(user.getUserimage()).into(mHeaderImage);
+                        mHeaderUsername.setText(user.getUsername());
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        };
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mNavigationView = findViewById(R.id.nav_view);
+        mNavigationView.setNavigationItemSelectedListener(this);
 
         mDatabase = FirebaseDatabase.getInstance().getReference().child("NFK");
         mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -208,9 +242,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         Intent singleInstaActivity = new Intent(MainActivity.this.getApplicationContext(), SingleNfkActivity.class);
                         singleInstaActivity.putExtra("postKey", post_key);
-                        singleInstaActivity.putExtra("postOwner", post_uid);
                         startActivity(singleInstaActivity);
-//                        MainActivity.this.finish();
                     }
                 });
             }
@@ -218,35 +250,48 @@ public class MainActivity extends AppCompatActivity {
         mNfkList.setAdapter(FBRA);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
         if(mToggle.onOptionsItemSelected(item)) {
             return true;
         }
-//
-//        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.logout) {
-            mAuth.signOut();
-
-        }
-
-
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        boolean result = false;
+
+        //noinspection SimplifiableIfStatement
+        switch (id) {
+            case R.id.action_settings:
+                result = true;
+                break;
+            case R.id.nav_logout:
+                mAuth.signOut();
+                result = true;
+                break;
+            case R.id.nav_password:
+                Intent forgotIntent = new Intent(MainActivity.this, ForgotPasswordActivity.class);
+                forgotIntent.putExtra("from", "MainActivity");
+                startActivity(forgotIntent);
+                result = true;
+                break;
+        }
+        return result;
     }
 
     /*
