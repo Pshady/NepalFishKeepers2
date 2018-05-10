@@ -24,6 +24,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.shashank.sony.fancytoastlib.FancyToast;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -144,8 +145,10 @@ public class SetupActivity extends AppCompatActivity {
                     mDatabaseusers.child(user_id).child("userimage").setValue(downloadUrl);
                     mDatabaseusers.child(user_id).child("subscription").setValue(categoryValue);
 
-                    Toast.makeText(getApplicationContext(), "Registration successful.", Toast.LENGTH_LONG).show();
-
+                    FancyToast.makeText(getApplicationContext(), "Setup Successful!",
+                            FancyToast.LENGTH_SHORT,
+                            FancyToast.SUCCESS,
+                            false).show();
                     Intent directIntent = new Intent(SetupActivity.this, LoginActivity.class);
                     startActivity(directIntent);
                     finish();

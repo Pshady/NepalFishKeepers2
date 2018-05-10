@@ -51,6 +51,7 @@ public class SingleNfkActivity extends AppCompatActivity {
     private TextView singlePostDesc;
     private TextView singlePostCategory;
     private TextView singlePostUserName;
+    private TextView singlePostPrice;
     private Button deleteButton;
     private Button startSharingButton;
     private Button letsTradeButton;
@@ -78,6 +79,7 @@ public class SingleNfkActivity extends AppCompatActivity {
         singlePostTitle = findViewById(R.id.singleTitle);
         singlePostImage = findViewById(R.id.singleImageView);
         singlePostUserName = findViewById(R.id.singleUserName);
+        singlePostPrice = findViewById(R.id.singlePrice);
 
         deleteButton = findViewById(R.id.singleDeleteButton);
         deleteButton.setVisibility(View.GONE);
@@ -131,6 +133,7 @@ public class SingleNfkActivity extends AppCompatActivity {
                     singlePostTitle.setText(mPost.getTitle());
                     singlePostDesc.setText(mPost.getDesc());
                     singlePostUserName.setText(mPost.getUsername());
+                    singlePostPrice.setText(String.valueOf(mPost.getPrice()));
                     Picasso.with(SingleNfkActivity.this).load(mPost.getImage()).into(singlePostImage);
                     Picasso.with(SingleNfkActivity.this).load(mPost.getUserimage()).into(singlePostUserImage);
                 }
@@ -332,33 +335,6 @@ public class SingleNfkActivity extends AppCompatActivity {
             }
         });
 
-
-
-//        mTradeDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                newTrade.child("traderId").setValue(mCurrentUser.getUid());
-//                newTrade.child("tradeStatus").setValue(TradeStatus.WAITING_FOR_APPROVAL);
-//                newTrade.child("tradeOwner").setValue(mPost.getUid()).addOnCompleteListener(new OnCompleteListener<Void>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<Void> task) {
-//                        if (task.isSuccessful()) {
-//
-//                            // Send notification
-////                             sendNotifications(titleValue, descValue, categoryValue, newPost.getKey());
-//                        }
-//
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//
-//        recreate();
     }
 
     public void startSharingButtonClicked(View view) {

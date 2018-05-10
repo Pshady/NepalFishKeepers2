@@ -77,6 +77,17 @@
             android:text="Post Title"
             android:textColor="@android:color/black" />
 
+            <TextView
+                android:id="@+id/textPrice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:textSize="15dp"
+                android:text="Post Price"
+                android:textColor="@android:color/black"
+
+                />
+
         <TextView
             android:id="@+id/textDescription"
             android:layout_width="match_parent"
@@ -87,6 +98,8 @@
             android:textColor="@android:color/black"
 
             />
+
+
 
         <TextView
             android:id="@+id/textUid"

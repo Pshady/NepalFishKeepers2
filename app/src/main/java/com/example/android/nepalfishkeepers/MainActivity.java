@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,6 +38,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.hypertrack.lib.HyperTrack;
 import com.squareup.picasso.Picasso;
+
+import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -64,8 +67,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         createNotificationChannel();
 
         fab = findViewById(R.id.fab);
-        mHeaderImage = findViewById(R.id.headerUserimage);
-        mHeaderUsername = findViewById(R.id.headerUsername);
 
         mNfkList = findViewById(R.id.nfk_list);
         mNfkList.setHasFixedSize(true);
@@ -78,21 +79,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
 
-                // Load image and username
-                // Get trader's token
-                mDatabaseUsers.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        User user = dataSnapshot.getValue(User.class);
-                        Picasso.with(MainActivity.this).load(user.getUserimage()).into(mHeaderImage);
-                        mHeaderUsername.setText(user.getUsername());
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
             }
         };
         mDrawerLayout.addDrawerListener(mToggle);
@@ -102,6 +89,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mNavigationView = findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
 
+        View navHeader = mNavigationView.getHeaderView(0);
+        mHeaderImage = navHeader.findViewById(R.id.headerUserimage);
+        mHeaderUsername = navHeader.findViewById(R.id.headerUsername);
+
         mDatabase = FirebaseDatabase.getInstance().getReference().child("NFK");
         mDatabaseUsers = FirebaseDatabase.getInstance().getReference().child("Users");
 
@@ -109,11 +100,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() == null) {
+                FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+                if (currentUser == null) {
                     Intent registerIntent = new Intent(MainActivity.this, RegisterActivity.class);
                     registerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(registerIntent);
-//                    MainActivity.this.finish();
+                } else {
+                    // Load image and username
+                    // Get trader's token
+                    mDatabaseUsers.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                            User user = dataSnapshot.getValue(User.class);
+                            String image = user.getUserimage();
+                            Picasso.with(MainActivity.this).load(image).into(mHeaderImage);
+                            mHeaderUsername.setText(user.getUsername());
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
 
             }
@@ -236,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 viewHolder.setImage(getApplicationContext(), model.getImage());
                 viewHolder.setCategory(model.getCategory());
                 viewHolder.setUid(post_uid);
+                viewHolder.setPrice(model.getPrice());
 
                 viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -340,6 +350,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public void setUid(String uid) {
             TextView postUid = mView.findViewById(R.id.textUid);
             postUid.setText(uid);
+        }
+
+        public void setPrice(float price) {
+            TextView postPrice = mView.findViewById(R.id.textPrice);
+            postPrice.setText(String.valueOf(price));
         }
 
         public void setVisibility(int visibility) {

@@ -28,7 +28,9 @@ import com.hypertrack.lib.HyperTrack;
 import com.hypertrack.lib.callbacks.HyperTrackCallback;
 import com.hypertrack.lib.models.ErrorResponse;
 import com.hypertrack.lib.models.SuccessResponse;
+import com.hypertrack.lib.models.User;
 import com.hypertrack.lib.models.UserParams;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -68,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(pass)) {
             mProgressDialog = new ProgressDialog(this);
-            mProgressDialog.setMessage("Logging in");
+            mProgressDialog.setMessage("Logging in...");
             mProgressDialog.setCancelable(false);
             mProgressDialog.show();
 
@@ -76,8 +78,17 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            if(mProgressDialog != null) {
+                                mProgressDialog.cancel();
+                            }
+
+                            FancyToast.makeText(getApplicationContext(), "Email or password not correct.!",
+                                    FancyToast.LENGTH_SHORT,
+                                    FancyToast.ERROR,
+                                    false).show();
 
                             Log.e("Login", "onFailure: ", e);
+
                         }
                     })
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -91,23 +102,21 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (TextUtils.isEmpty(email) && TextUtils.isEmpty(pass)) {
-            Toast.makeText(getApplicationContext(), "Enter email address and password!", Toast.LENGTH_SHORT).show();
+            FancyToast.makeText(getApplicationContext(), "Enter email address and password!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
             return;
         }
 
         if (TextUtils.isEmpty(email)) {
-            Toast.makeText(getApplicationContext(), "Enter email!", Toast.LENGTH_SHORT).show();
+            FancyToast.makeText(getApplicationContext(), "Enter email!",  FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
             return;
         }
 
         if (TextUtils.isEmpty(pass)) {
-            Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_SHORT).show();
+            FancyToast.makeText(getApplicationContext(), "Enter password!", FancyToast.LENGTH_SHORT, FancyToast.ERROR, true).show();
             return;
         }
 
     }
-
-
 
     public void checkUserExists() {
         final String user_id = mAuth.getCurrentUser().getUid();
@@ -124,6 +133,10 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(@NonNull SuccessResponse successResponse) {
 
+                            // Save Hypertrack user id
+                            User user = (User) successResponse.getResponseObject();
+                            mDatabase.child(user_id).child("hyperUserId").setValue(user.getId());
+
                             if(mProgressDialog != null) {
                                 mProgressDialog.cancel();
                             }
@@ -137,7 +150,7 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onError(@NonNull ErrorResponse errorResponse) {
                             // Handle error on getOrCreate user
-                            Toast.makeText(LoginActivity.this, errorResponse.getErrorMessage(), Toast.LENGTH_SHORT).show();
+                            FancyToast.makeText(LoginActivity.this, errorResponse.getErrorMessage(), FancyToast.LENGTH_SHORT, FancyToast.ERROR,true).show();
                         }
                     });
                 }

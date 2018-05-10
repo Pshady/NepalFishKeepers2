@@ -22,16 +22,19 @@
         <LinearLayout
             android:id="@+id/live_tracking_action_layout"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="80dp"
+            android:orientation="horizontal"
             android:layout_alignParentBottom="true"
-            android:visibility="gone">
+            android:visibility="gone"
+            >
 
-            <Button
+            <android.support.design.widget.FloatingActionButton
                 android:id="@+id/share_button"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Share"
-                android:textAlignment="center" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/fab_margin"
+                android:src="@drawable/baseline_share_white_24"
+                android:textAlignment="center"/>
         </LinearLayout>
 
     </RelativeLayout>

@@ -10,11 +10,14 @@ public class Nfk {
     private String title,desc,image,username, category, userimage, uid;
     private boolean reported;
     public int tradeCount = 0;
+    private float price;
+
     public Nfk(){
 
     }
 
-    public Nfk(String title, String desc, String image, String username, String category, String userimage, String uid, boolean reported){
+    public Nfk(String title, String desc, String image, String username,
+               String category, String userimage, String uid, boolean reported, float price){
         this.title = title;
         this.desc = desc;
         this.image = image;
@@ -23,6 +26,7 @@ public class Nfk {
         this.userimage = userimage;
         this.uid = uid;
         this.reported = reported;
+        this.price = price;
     }
 
     public boolean isReported() {
@@ -39,6 +43,15 @@ public class Nfk {
 
     public void setTradeCount(int tradeCount) {
         this.tradeCount = tradeCount;
+    }
+
+
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
     }
 
     public String getCategory() { return category; }

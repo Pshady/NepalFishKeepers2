@@ -19,6 +19,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -54,6 +55,10 @@ public class RegisterActivity extends AppCompatActivity {
             mAuth.createUserWithEmailAndPassword(email, pass).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
+                    FancyToast.makeText(getApplicationContext(), "Register failed! Please try again.",
+                            FancyToast.LENGTH_SHORT,
+                            FancyToast.ERROR,
+                            false).show();
                     Log.e("FAILURE", e.getMessage());
                 }
             }).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -71,6 +76,10 @@ public class RegisterActivity extends AppCompatActivity {
                         String firebaseToken = sharedPreferences.getString("firebaseToken", "");
                         current_user_db.child("firebasetoken").setValue(firebaseToken);
 
+                        FancyToast.makeText(getApplicationContext(), "Register successful!",
+                                FancyToast.LENGTH_SHORT,
+                                FancyToast.ERROR,
+                                false).show();
                         Intent mainIntent = new Intent(RegisterActivity.this, SetupActivity.class);
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(mainIntent);

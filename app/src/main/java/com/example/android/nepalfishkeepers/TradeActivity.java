@@ -3,9 +3,11 @@ package com.example.android.nepalfishkeepers;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -53,6 +55,7 @@ import com.hypertrack.lib.models.ErrorResponse;
 import com.hypertrack.lib.models.HyperTrackLocation;
 import com.hypertrack.lib.models.Place;
 import com.hypertrack.lib.models.SuccessResponse;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,7 +73,7 @@ public class TradeActivity extends FragmentActivity {
     private Location mLastKnownLocation;
     private HyperTrackMapFragment mHyperTrackMapFragment;
     private LinearLayout mActionLayout;
-    private Button mShareButton;
+    private FloatingActionButton mShareButton;
     private String postKey;
     private Place mLastExpectedPlace;
     private ButtonType mButtonType;
@@ -80,6 +83,7 @@ public class TradeActivity extends FragmentActivity {
     private DatabaseReference mTradeDatabase;
     private FirebaseUser mCurrentUser;
     private String collectionId;
+    private String hyperUserId;
     private ProgressDialog mProgressDialog;
 
     private void getDeviceLocation() {
@@ -169,6 +173,19 @@ public class TradeActivity extends FragmentActivity {
             }
             }
         });
+
+        // Get current user
+        mDatabase.child("Users").child(mCurrentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                hyperUserId = dataSnapshot.child("hyperUserId").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -232,10 +249,11 @@ public class TradeActivity extends FragmentActivity {
                 .setExpectedPlace(mLastExpectedPlace)
                 .setType(Action.ACTION_TYPE_VISIT)
                 .setCollectionId(collectionId)
+                .setUserId(hyperUserId)
                 .build();
 
         mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setMessage("Sharing destination");
+        mProgressDialog.setMessage("Sharing destination...");
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
 
@@ -310,7 +328,7 @@ public class TradeActivity extends FragmentActivity {
 
     private void shareComplete() {
         mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setMessage("Completing track");
+        mProgressDialog.setMessage("Completing track...");
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
 
@@ -321,11 +339,9 @@ public class TradeActivity extends FragmentActivity {
                  TradeStatus status = TradeStatus.valueOf(dataSnapshot.child("tradeStatus").getValue().toString());
                  if(status == TradeStatus.TRADED) {
                      HyperTrack.removeActions(null);
-                     // Handle removeActions response here
-//                     Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-//                     intent.putExtra("postKey", postKey);
-//                     startActivity(intent);
+                     handleCompleteAction(false);
                      TradeActivity.this.finish();
+                     return;
                  }
 
                  final String tradeOwner = dataSnapshot.child("tradeOwner").getValue().toString();
@@ -336,26 +352,7 @@ public class TradeActivity extends FragmentActivity {
                  HyperTrack.completeActionInSync(actionId, new HyperTrackCallback() {
                      @Override
                      public void onSuccess(@NonNull SuccessResponse response) {
-                         HyperTrack.stopTracking(new HyperTrackCallback() {
-                             @Override
-                             public void onSuccess(@NonNull SuccessResponse response) {
-//                                 mDatabase.child("Trades").child(postKey).child("tradeStatus").setValue(TradeStatus.TRADED);
-//                                 mDatabase.child("Trades").child(postKey).child("sharers").child(tradeOwner).setValue("");
-
-//                                 HyperTrack.removeActions(null);
-//                                 Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-//                                 intent.putExtra("postKey", postKey);
-//                                 startActivity(intent);
-//                                 TradeActivity.this.finish();
-
-
-                             }
-
-                             @Override
-                             public void onError(@NonNull ErrorResponse errorResponse) {
-
-                             }
-                         });
+                         HyperTrack.stopTracking();
 
                          final Trade trade = dataSnapshot.getValue(Trade.class);
                          trade.setTradeStatus(TradeStatus.TRADED);
@@ -373,23 +370,16 @@ public class TradeActivity extends FragmentActivity {
                                              trade.sharers.put(traderId, "");
                                              mTradeDatabase.child(postKey).setValue(trade);
 
-//                                     mDatabase.child("Trades").child(postKey).child("tradeStatus").setValue(TradeStatus.TRADED);
-//                                     mDatabase.child("Trades").child(postKey).child("sharers").child(traderId).setValue("");
-
                                              HyperTrack.removeActions(null);
 
-                                             if(mProgressDialog != null) {
-                                                 mProgressDialog.cancel();
-                                             }
-//                                             Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-//                                             intent.putExtra("postKey", postKey);
-//                                             startActivity(intent);
+                                             handleCompleteAction(false);
+
                                              TradeActivity.this.finish();
                                          }
 
                                          @Override
                                          public void onError(@NonNull ErrorResponse errorResponse) {
-
+                                             handleCompleteAction(true);
                                          }
                                      });
                                  }
@@ -397,25 +387,22 @@ public class TradeActivity extends FragmentActivity {
                                  @Override
                                  public void onError(@NonNull ErrorResponse errorResponse) {
 
+                                     handleCompleteAction(true);
+
                                  }
                              });
                          } else {
                              mTradeDatabase.child(postKey).setValue(trade);
 
                              HyperTrack.removeActions(null);
-                             if(mProgressDialog != null) {
-                                 mProgressDialog.cancel();
-                             }
-//                             Intent intent = new Intent(TradeActivity.this, SingleNfkActivity.class);
-//                             intent.putExtra("postKey", postKey);
-//                             startActivity(intent);
+                             handleCompleteAction(false);
                              TradeActivity.this.finish();
                          }
                      }
 
                      @Override
                      public void onError(@NonNull ErrorResponse errorResponse) {
-
+                         handleCompleteAction(true);
                      }
                  });
 
@@ -430,10 +417,18 @@ public class TradeActivity extends FragmentActivity {
             }
          });
 
-
-
-
         Log.d("Message", "Share complete");
+    }
+
+    private void handleCompleteAction(boolean isError) {
+        FancyToast.makeText(getApplicationContext(), isError ? "Error on trade completed!" : "Trade complete!",
+                FancyToast.LENGTH_SHORT,
+                isError ? FancyToast.ERROR : FancyToast.SUCCESS,
+                false).show();
+
+        if(mProgressDialog != null) {
+            mProgressDialog.cancel();
+        }
     }
 
     private void trackAction() {
@@ -490,11 +485,9 @@ public class TradeActivity extends FragmentActivity {
     private void setButtonType(ButtonType type) {
         mButtonType = type;
         if(type == ButtonType.SHARE_LINK) {
-            mShareButton.setText("Share");
-            mShareButton.setBackgroundColor(Color.parseColor("#00ff00"));
+            mShareButton.setImageResource(R.drawable.baseline_share_white_24);
         } else {
-            mShareButton.setText("Stop");
-            mShareButton.setBackgroundColor(Color.parseColor("#ff0000"));
+            mShareButton.setImageResource(R.drawable.baseline_close_white_24);
         }
     }
 

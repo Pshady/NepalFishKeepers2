@@ -39,9 +39,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.gson.JsonObject;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +59,7 @@ public class PostActivity extends AppCompatActivity {
     private ImageButton imageButton;
     private EditText editName;
     private EditText editDesc;
+    private EditText editPrice;
     private Spinner spinnerCategory;
     private StorageReference storageReference;
     private DatabaseReference databaseReference;
@@ -105,6 +108,7 @@ public class PostActivity extends AppCompatActivity {
         setContentView(R.layout.activity_post);
         editName = findViewById(R.id.editName);
         editDesc = findViewById(R.id.editDesc);
+        editPrice = findViewById(R.id.editPrice);
         spinnerCategory = findViewById(R.id.spinnerCategory);
         storageReference = FirebaseStorage.getInstance().getReference();
         databaseReference = FirebaseDatabase.getInstance().getReference().child("NFK");
@@ -140,8 +144,10 @@ public class PostActivity extends AppCompatActivity {
         final String titleValue = editName.getText().toString().trim();
         final String descValue = editDesc.getText().toString().trim();
         final String categoryValue = spinnerCategory.getSelectedItem().toString();
+        final float price = TextUtils.isEmpty(editPrice.getText().toString()) ? 0
+                : Float.parseFloat(editPrice.getText().toString());
 
-        if (!TextUtils.isEmpty(titleValue) && !TextUtils.isEmpty(descValue)) {
+        if (!TextUtils.isEmpty(titleValue) && !TextUtils.isEmpty(descValue) && price != 0) {
             if (uri != null) {
                 StorageReference filePath = storageReference.child("PostImage").child(uri.getLastPathSegment());
                 filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -149,13 +155,13 @@ public class PostActivity extends AppCompatActivity {
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         final Uri downloadurl = taskSnapshot.getDownloadUrl();
                         Toast.makeText(PostActivity.this, "Upload Complete", Toast.LENGTH_LONG).show();
-                        createNewPost(titleValue, descValue, categoryValue, downloadurl);
+                        createNewPost(titleValue, descValue, categoryValue, downloadurl, price);
 
                     }
                 });
             }
             else {
-                createNewPost(titleValue, descValue, categoryValue, null);
+                createNewPost(titleValue, descValue, categoryValue, null, price);
             }
         }
     }
@@ -203,7 +209,7 @@ public class PostActivity extends AppCompatActivity {
         RequestQueueSingleton.getInstance(this.getApplicationContext()).addToRequestQueue(jsonRequest);
     }
 
-    private void createNewPost(final String titleValue, final String descValue, final String categoryValue, @Nullable final Uri downloadurl) {
+    private void createNewPost(final String titleValue, final String descValue, final String categoryValue, @Nullable final Uri downloadurl, final float priceValue) {
         final DatabaseReference newPost = databaseReference.push();
 
         mDatabaseUsers.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -215,7 +221,7 @@ public class PostActivity extends AppCompatActivity {
 
                 Nfk post = new Nfk(titleValue, descValue,
                         downloadurl != null ? downloadurl.toString() : null, username,
-                        categoryValue, userimage, mCurrentUser.getUid(), false);
+                        categoryValue, userimage, mCurrentUser.getUid(), false, priceValue);
                 newPost.setValue(post).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -223,6 +229,11 @@ public class PostActivity extends AppCompatActivity {
 
                             // Send notification
                             sendNotifications(titleValue, descValue, categoryValue, newPost.getKey());
+
+                            FancyToast.makeText(getApplicationContext(), "Post created!",
+                                    FancyToast.LENGTH_SHORT,
+                                    FancyToast.ERROR,
+                                    false).show();
 
                             Intent mainActivityIntent = new Intent(PostActivity.this, MainActivity.class);
                             startActivity(mainActivityIntent);
