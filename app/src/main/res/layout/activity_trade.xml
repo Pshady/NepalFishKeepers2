@@ -22,7 +22,7 @@
         <LinearLayout
             android:id="@+id/live_tracking_action_layout"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="140dp"
             android:orientation="horizontal"
             android:layout_alignParentBottom="true"
             android:visibility="gone"
